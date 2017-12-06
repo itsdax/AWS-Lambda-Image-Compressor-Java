@@ -39,8 +39,6 @@ public class Index implements RequestHandler<S3Event, String> {
         String bucketName = s3Entity.getBucket().getName();
         String key = s3Entity.getObject().getKey();
 
-
-
         try (S3Object object = amazonS3.getObject(new GetObjectRequest(bucketName, key))) {
             Map<String, String> metadata =  object.getObjectMetadata().getUserMetadata();
             if (metadata.get("compressed") == null){
