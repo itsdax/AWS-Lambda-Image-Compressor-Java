@@ -17,6 +17,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 import java.io.*;
 import java.util.Iterator;
+import java.util.Map;
 
 public class Index implements RequestHandler<S3Event, String> {
 
@@ -39,9 +40,22 @@ public class Index implements RequestHandler<S3Event, String> {
         String key = s3Entity.getObject().getKey();
 
         try (S3Object object = amazonS3.getObject(new GetObjectRequest(bucketName, key))) {
+            Map<String, String> metadata =  object.getObjectMetadata().getUserMetadata();
+            if (metadata.get("compressed") == null){
+                metadata.put("compressed", "true");
+            } else {
+                return "Already Compressed";
+            }
+
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setUserMetadata(metadata);
+
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             compress(object.getObjectContent(), byteArrayOutputStream);
-            amazonS3.putObject(new PutObjectRequest(bucketName, key, new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), new ObjectMetadata()));
+
+            objectMetadata.setContentLength(byteArrayOutputStream.size());
+
+            amazonS3.putObject(new PutObjectRequest(bucketName, key, new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), objectMetadata));
         } catch (IOException e) {
             e.printStackTrace();
             return "Failed: " + e.getMessage();
