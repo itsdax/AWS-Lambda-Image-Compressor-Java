@@ -1,6 +1,6 @@
 # AWS-Lambda-Image-Compressor-Java
 Lambda Function that compresses PNG and JPG files. Replaces original file in S3 with compressed.
-Reduces image size while keeping quality loss at minimal.
+Reduces image size while keeping quality loss at minimal. Outputs new file in the original image location of S3.
 
 ### Instructions:
 1) Install Maven.
